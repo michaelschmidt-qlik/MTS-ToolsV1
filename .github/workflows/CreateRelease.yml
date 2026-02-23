@@ -1,0 +1,44 @@
+# This is a basic workflow to Create a Initial Release, and Draft Releases for Subsequent Commits
+
+name: Create Release
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  GenerateReleaseInfo:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - name: Gather Info
+        id: pwsh-gather
+        shell: pwsh
+        run: |
+          $QVF = Get-ChildItem ./ -Recurse -Include "*.qvf"|Select-Object -First 1
+          "### QVF File" >> $env:GITHUB_STEP_SUMMARY
+          "$($QVF.FullName)" >> $env:GITHUB_STEP_SUMMARY
+          "$($QVF.BaseName)" >> $env:GITHUB_STEP_SUMMARY 
+          
+          try {$Tag = $($(gh release view --json tagName)|Convertfrom-Json).TagName} catch{}
+          try {$TagStr = [Regex]::new('(\d+\.)?(\d+\.)?(\*|\d+)').Match($tag).Value} catch{}
+          try {$Version = [version]::new($TagStr);"Draft=--draft" >> $ENV:GITHUB_OUTPUT}catch {$Version = [version]::new('0.0.0.0');"Draft=" >> $ENV:GITHUB_OUTPUT }
+          $ModuleVersion = [version]::new("$($Version.Major).$($Version.Minor).$("$([datetime]::utcnow.ToString('yy'))$([datetime]::UtcNow.DayOfYear)").$([datetime]::UtcNow.TimeOfDay.TotalMinutes.ToString('#'))")
+          "Version=v$($ModuleVersion)" >> $ENV:GITHUB_OUTPUT
+          "QVFName=$($QVF.BaseName)" >> $ENV:GITHUB_OUTPUT
+          "QVF=$($QVF.FullName)" >> $ENV:GITHUB_OUTPUT
+          "## QVF Version: $($ModuleVersion)" >> $env:GITHUB_STEP_SUMMARY
+          Exit 0         
+      - name: Release
+        if: success() &  ${{ github.ref == 'refs/heads/main' }} 
+        run: |
+          gh release create ${{ steps.pwsh-gather.outputs.Draft }} --generate-notes --title "${{ steps.pwsh-gather.outputs.QVFName }} - ${{ steps.pwsh-gather.outputs.Version }}" ${{ steps.pwsh-gather.outputs.Version }} "${{ steps.pwsh-gather.outputs.QVF }}"
