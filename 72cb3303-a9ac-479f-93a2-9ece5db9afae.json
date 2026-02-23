@@ -1,14 +1,14 @@
 ﻿{
   "id": "72cb3303-a9ac-479f-93a2-9ece5db9afae",
   "createdDate": "2023-09-28T21:40:09.374Z",
-  "modifiedDate": "2026-02-23T18:17:02.154Z",
+  "modifiedDate": "2026-02-23T18:24:47.029Z",
   "modifiedByUserName": "LAHACIENDALOCA\\miguel",
   "schemaPath": "App",
   "customProperties": [
     {
       "id": "9bdb88b4-ae1f-4ad7-af8c-349e64388884",
       "createdDate": "2023-10-04T10:37:12.622Z",
-      "modifiedDate": "2026-02-23T18:17:02.154Z",
+      "modifiedDate": "2026-02-23T18:24:47.029Z",
       "modifiedByUserName": "LAHACIENDALOCA\\miguel",
       "schemaPath": "CustomPropertyValue",
       "value": "AppWithData",
